@@ -1,3 +1,5 @@
+[![CI](https://github.com/GnusovDmitrii/Patterns_2/actions/workflows/gradle.yml/badge.svg)](https://github.com/GnusovDmitrii/Patterns_2/actions/workflows/gradle.yml)
+
 # Домашнее задание к занятию «2.3. Patterns»
 
 В качестве результата пришлите ссылку на ваш GitHub-проект в личном кабинете студента на
