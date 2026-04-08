@@ -3,8 +3,6 @@ name: CI
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
   test:
@@ -20,10 +18,13 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      
       - name: Start application
         run: |
           java -jar artifacts/app-ibank.jar -P:profile=test &
           sleep 10
       
       - name: Run tests
-        run: gradle test
+        run: ./gradlew test
