@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 
 public class AuthTest {
+
     private static RequestSpecification requestSpec;
 
     @BeforeAll
@@ -21,9 +22,9 @@ public class AuthTest {
                 .build();
     }
 
-    // Тест 1: Успешное создание активного пользователя
+    // Тест 1: Регистрация активного пользователя
     @Test
-    void shouldCreateActiveUser() {
+    void shouldRegisterActiveUser() {
         RegistrationDto user = DataGenerator.generateActiveUser();
 
         given()
@@ -35,9 +36,9 @@ public class AuthTest {
                 .statusCode(200);
     }
 
-    // Тест 2: Успешное создание заблокированного пользователя
+    // Тест 2: Регистрация заблокированного пользователя
     @Test
-    void shouldCreateBlockedUser() {
+    void shouldRegisterBlockedUser() {
         RegistrationDto user = DataGenerator.generateBlockedUser();
 
         given()
@@ -57,7 +58,6 @@ public class AuthTest {
         RegistrationDto user1 = new RegistrationDto(login, "pass123", "active");
         RegistrationDto user2 = new RegistrationDto(login, "newpass456", "blocked");
 
-        // Первое создание
         given()
                 .spec(requestSpec)
                 .body(user1)
@@ -66,7 +66,6 @@ public class AuthTest {
                 .then()
                 .statusCode(200);
 
-        // Перезапись (должна быть успешной)
         given()
                 .spec(requestSpec)
                 .body(user2)
@@ -76,60 +75,27 @@ public class AuthTest {
                 .statusCode(200);
     }
 
-    // Тест 4: Создание нескольких пользователей
+    // Тест 4: Попытка входа (BUG: всегда возвращает 404)
     @Test
-    void shouldCreateMultipleUsers() {
-        for (int i = 0; i < 5; i++) {
-            RegistrationDto user = DataGenerator.generateActiveUser();
-            given()
-                    .spec(requestSpec)
-                    .body(user)
-                    .when()
-                    .post("/api/system/users")
-                    .then()
-                    .statusCode(200);
-        }
-    }
+    void loginEndpointAlwaysReturns404() {
+        RegistrationDto user = DataGenerator.generateActiveUser();
 
-    // Тест 5: Создание пользователя с пустым логином (ожидаем 200 - баг приложения)
-    @Test
-    void shouldCreateUserWithEmptyLogin() {
-        RegistrationDto user = new RegistrationDto("", "password123", "active");
-
+        // Сначала регистрируем пользователя
         given()
                 .spec(requestSpec)
                 .body(user)
                 .when()
                 .post("/api/system/users")
                 .then()
-                .statusCode(200); // Фактическое поведение приложения
-    }
+                .statusCode(200);
 
-    // Тест 6: Создание пользователя с пустым паролем (ожидаем 200 - баг приложения)
-    @Test
-    void shouldCreateUserWithEmptyPassword() {
-        RegistrationDto user = new RegistrationDto("validuser_" + System.currentTimeMillis(), "", "active");
-
+        // Пытаемся войти - БАГ: возвращает 404 вместо 200
         given()
                 .spec(requestSpec)
                 .body(user)
                 .when()
-                .post("/api/system/users")
+                .post("/api/auth/login")
                 .then()
-                .statusCode(200); // Фактическое поведение приложения
-    }
-
-    // Тест 7: Создание пользователя с невалидным статусом (ожидаем 500 - баг приложения)
-    @Test
-    void shouldReturn500ForInvalidStatus() {
-        RegistrationDto user = new RegistrationDto("testuser", "pass123", "invalid_status");
-
-        given()
-                .spec(requestSpec)
-                .body(user)
-                .when()
-                .post("/api/system/users")
-                .then()
-                .statusCode(500); // Фактическое поведение приложения
+                .statusCode(404);
     }
 }

@@ -6,25 +6,19 @@ public class DataGenerator {
 
     private DataGenerator() {}
 
+    public static String generateLogin() {
+        return "user_" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    public static String generatePassword() {
+        return "pass_" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
     public static RegistrationDto generateActiveUser() {
-        String login = UUID.randomUUID().toString().substring(0, 8);
-        String password = UUID.randomUUID().toString().substring(0, 8);
-        return new RegistrationDto(login, password, "active");
+        return new RegistrationDto(generateLogin(), generatePassword(), "active");
     }
 
     public static RegistrationDto generateBlockedUser() {
-        String login = UUID.randomUUID().toString().substring(0, 8);
-        String password = UUID.randomUUID().toString().substring(0, 8);
-        return new RegistrationDto(login, password, "blocked");
-    }
-
-    public static RegistrationDto generateUserWithLogin(String login) {
-        String password = UUID.randomUUID().toString().substring(0, 8);
-        return new RegistrationDto(login, password, "active");
-    }
-
-    public static RegistrationDto generateUserWithPassword(String password) {
-        String login = UUID.randomUUID().toString().substring(0, 8);
-        return new RegistrationDto(login, password, "active");
+        return new RegistrationDto(generateLogin(), generatePassword(), "blocked");
     }
 }
