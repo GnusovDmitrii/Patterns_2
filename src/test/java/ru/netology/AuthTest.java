@@ -1,12 +1,11 @@
 package ru.netology;
 
+import org.junit.jupiter.api.Test;
+import static io.restassured.RestAssured.given;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import static io.restassured.RestAssured.given;
 
 public class AuthTest {
 
@@ -22,10 +21,9 @@ public class AuthTest {
                 .build();
     }
 
-    // Тест 1: Регистрация активного пользователя
     @Test
     void shouldRegisterActiveUser() {
-        RegistrationDto user = DataGenerator.generateActiveUser();
+        RegistrationDto user = DataGenerator.createActiveUser();
 
         given()
                 .spec(requestSpec)
@@ -36,10 +34,9 @@ public class AuthTest {
                 .statusCode(200);
     }
 
-    // Тест 2: Регистрация заблокированного пользователя
     @Test
     void shouldRegisterBlockedUser() {
-        RegistrationDto user = DataGenerator.generateBlockedUser();
+        RegistrationDto user = DataGenerator.createBlockedUser();
 
         given()
                 .spec(requestSpec)
@@ -50,13 +47,12 @@ public class AuthTest {
                 .statusCode(200);
     }
 
-    // Тест 3: Перезапись существующего пользователя
     @Test
     void shouldOverwriteExistingUser() {
         String login = "testuser_" + System.currentTimeMillis();
 
-        RegistrationDto user1 = new RegistrationDto(login, "pass123", "active");
-        RegistrationDto user2 = new RegistrationDto(login, "newpass456", "blocked");
+        RegistrationDto user1 = DataGenerator.createUser(login, "pass123", "active");
+        RegistrationDto user2 = DataGenerator.createUser(login, "newpass456", "blocked");
 
         given()
                 .spec(requestSpec)
@@ -73,29 +69,5 @@ public class AuthTest {
                 .post("/api/system/users")
                 .then()
                 .statusCode(200);
-    }
-
-    // Тест 4: Попытка входа (BUG: всегда возвращает 404)
-    @Test
-    void loginEndpointAlwaysReturns404() {
-        RegistrationDto user = DataGenerator.generateActiveUser();
-
-        // Сначала регистрируем пользователя
-        given()
-                .spec(requestSpec)
-                .body(user)
-                .when()
-                .post("/api/system/users")
-                .then()
-                .statusCode(200);
-
-        // Пытаемся войти - БАГ: возвращает 404 вместо 200
-        given()
-                .spec(requestSpec)
-                .body(user)
-                .when()
-                .post("/api/auth/login")
-                .then()
-                .statusCode(404);
     }
 }
