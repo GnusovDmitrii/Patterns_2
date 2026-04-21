@@ -3,11 +3,9 @@ name: CI
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
-  api-tests:
+  test:
     runs-on: ubuntu-latest
     
     steps:
@@ -22,8 +20,7 @@ jobs:
       - name: Start SUT
         run: |
           java -jar artifacts/app-ibank.jar -P:profile=test &
-        
-          curl -s -o /dev/null -w "%{http_code}\n" http://localhost:9999/ || echo "SUT started"
+          sleep 10
       
-      - name: Run API tests only
-        run: gradle test --tests "ApiRegistrationTest"
+      - name: Run API tests
+        run: gradle test --tests "ru.netology.AuthTest"
