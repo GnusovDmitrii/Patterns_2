@@ -1,6 +1,5 @@
 package ru.netology;
 
-import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,10 +13,6 @@ public class LoginTest {
 
     @BeforeAll
     static void setUpAll() {
-        Configuration.browser = "chrome";
-        Configuration.headless = false;
-        Configuration.timeout = 10000;
-        Configuration.holdBrowserOpen = false;
     }
 
     @BeforeEach
@@ -34,10 +29,9 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что произошел вход (перенаправление на страницу личного кабинета)
-        sleep(2000); // Даем время на перенаправление
-        String currentUrl = webdriver().driver().url();
-        assert currentUrl.contains("/dashboard") || !currentUrl.equals(BASE_URL);
+        // Проверяем, что появилась страница личного кабинета
+        $("[data-test-id='dashboard']").shouldBe(visible);
+        $("[data-test-id='dashboard']").shouldHave(text("Личный кабинет"));
     }
 
     // Тест 2: Вход заблокированного пользователя
@@ -49,14 +43,9 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что остались на странице входа
-        sleep(1000);
-        assert !webdriver().driver().url().contains("/dashboard");
-
-        // Ищем текст ошибки (если есть)
-        if ($("[data-test-id='error-notification']").exists()) {
-            $("[data-test-id='error-notification']").shouldBe(visible);
-        }
+        // Проверяем, что появилось сообщение об ошибке
+        $("[data-test-id='error-notification']").shouldBe(visible);
+        $("[data-test-id='error-notification']").shouldHave(text("Пользователь заблокирован"));
     }
 
     // Тест 3: Вход незарегистрированного пользователя
@@ -69,8 +58,9 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(password);
         $("[data-test-id='action-login']").click();
 
-        sleep(1000);
-        assert !webdriver().driver().url().contains("/dashboard");
+        // Проверяем, что появилось сообщение об ошибке
+        $("[data-test-id='error-notification']").shouldBe(visible);
+        $("[data-test-id='error-notification']").shouldHave(text("Неверный логин или пароль"));
     }
 
     // Тест 4: Вход с неправильным паролем
@@ -82,8 +72,9 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue("wrong_password");
         $("[data-test-id='action-login']").click();
 
-        sleep(1000);
-        assert !webdriver().driver().url().contains("/dashboard");
+        // Проверяем, что появилось сообщение об ошибке
+        $("[data-test-id='error-notification']").shouldBe(visible);
+        $("[data-test-id='error-notification']").shouldHave(text("Неверный логин или пароль"));
     }
 
     // Тест 5: Вход с неправильным логином
@@ -95,8 +86,9 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        sleep(1000);
-        assert !webdriver().driver().url().contains("/dashboard");
+        // Проверяем, что появилось сообщение об ошибке
+        $("[data-test-id='error-notification']").shouldBe(visible);
+        $("[data-test-id='error-notification']").shouldHave(text("Неверный логин или пароль"));
     }
 
     // Тест 6: Пустой логин
@@ -108,9 +100,9 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что кнопка не активна или есть ошибка валидации
-        sleep(1000);
-        assert !webdriver().driver().url().contains("/dashboard");
+        // Проверяем, что появилось сообщение об ошибке валидации
+        $("[data-test-id='login'].input_invalid").shouldBe(visible);
+        $("[data-test-id='login'] .input__sub").shouldHave(text("Поле обязательно для заполнения"));
     }
 
     // Тест 7: Пустой пароль
@@ -122,7 +114,8 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue("");
         $("[data-test-id='action-login']").click();
 
-        sleep(1000);
-        assert !webdriver().driver().url().contains("/dashboard");
+        // Проверяем, что появилось сообщение об ошибке валидации
+        $("[data-test-id='password'].input_invalid").shouldBe(visible);
+        $("[data-test-id='password'] .input__sub").shouldHave(text("Поле обязательно для заполнения"));
     }
 }

@@ -20,7 +20,6 @@ jobs:
       - name: Start SUT
         run: |
           java -jar artifacts/app-ibank.jar -P:profile=test &
-          sleep 10
-      
+
       - name: Run API tests
-        run: gradle test --tests "ru.netology.AuthTest"
+        run: gradle test --info -Dselenide.headless=true
