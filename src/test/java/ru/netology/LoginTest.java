@@ -1,5 +1,6 @@
 package ru.netology;
 
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,6 @@ public class LoginTest {
         open(BASE_URL);
     }
 
-    // Тест 1: Вход активного зарегистрированного пользователя
     @Test
     void shouldLoginWithActiveRegisteredUser() {
         RegistrationDto user = DataGenerator.createActiveUser();
@@ -29,12 +29,13 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что появилась страница личного кабинета
-        $("[data-test-id='dashboard']").shouldBe(visible);
-        $("[data-test-id='dashboard']").shouldHave(text("Личный кабинет"));
+        // Проверка успешного входа - проверяем видимость заголовка "Личный кабинет"
+        $("h2").shouldHave(exactText("Личный кабинет")).shouldBe(visible);
+
+        // Дополнительно проверяем, что сообщение об ошибке не появилось
+        $("[data-test-id='error-notification']").shouldNotBe(visible);
     }
 
-    // Тест 2: Вход заблокированного пользователя
     @Test
     void shouldNotLoginWithBlockedRegisteredUser() {
         RegistrationDto user = DataGenerator.createBlockedUser();
@@ -43,12 +44,12 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что появилось сообщение об ошибке
+        // Проверка сообщения об ошибке
         $("[data-test-id='error-notification']").shouldBe(visible);
-        $("[data-test-id='error-notification']").shouldHave(text("Пользователь заблокирован"));
+        $("[data-test-id='error-notification'] .notification__content")
+                .shouldHave(exactText("Ошибка! Пользователь заблокирован"));
     }
 
-    // Тест 3: Вход незарегистрированного пользователя
     @Test
     void shouldNotLoginWithUnregisteredActiveUser() {
         String login = DataGenerator.generateLogin();
@@ -58,12 +59,15 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(password);
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что появилось сообщение об ошибке
+        // Проверка сообщения об ошибке
         $("[data-test-id='error-notification']").shouldBe(visible);
-        $("[data-test-id='error-notification']").shouldHave(text("Неверный логин или пароль"));
+        $("[data-test-id='error-notification'] .notification__content")
+                .shouldHave(exactText("Ошибка! Неверно указан логин или пароль"));
+
+        // Проверяем, что заголовок "Личный кабинет" не появился
+        $("h2").shouldNotHave(exactText("Личный кабинет"));
     }
 
-    // Тест 4: Вход с неправильным паролем
     @Test
     void shouldNotLoginWithValidUserWrongPassword() {
         RegistrationDto user = DataGenerator.createActiveUser();
@@ -72,12 +76,12 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue("wrong_password");
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что появилось сообщение об ошибке
+        // Проверка сообщения об ошибке
         $("[data-test-id='error-notification']").shouldBe(visible);
-        $("[data-test-id='error-notification']").shouldHave(text("Неверный логин или пароль"));
+        $("[data-test-id='error-notification'] .notification__content")
+                .shouldHave(exactText("Ошибка! Неверно указан логин или пароль"));
     }
 
-    // Тест 5: Вход с неправильным логином
     @Test
     void shouldNotLoginWithValidUserWrongLogin() {
         RegistrationDto user = DataGenerator.createActiveUser();
@@ -86,12 +90,12 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что появилось сообщение об ошибке
+        // Проверка сообщения об ошибке
         $("[data-test-id='error-notification']").shouldBe(visible);
-        $("[data-test-id='error-notification']").shouldHave(text("Неверный логин или пароль"));
+        $("[data-test-id='error-notification'] .notification__content")
+                .shouldHave(exactText("Ошибка! Неверно указан логин или пароль"));
     }
 
-    // Тест 6: Пустой логин
     @Test
     void shouldNotLoginWithEmptyLogin() {
         RegistrationDto user = DataGenerator.createActiveUser();
@@ -100,12 +104,17 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue(user.getPassword());
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что появилось сообщение об ошибке валидации
+        // Проверка валидации поля
         $("[data-test-id='login'].input_invalid").shouldBe(visible);
-        $("[data-test-id='login'] .input__sub").shouldHave(text("Поле обязательно для заполнения"));
+        $("[data-test-id='login'] .input__sub").shouldHave(exactText("Поле обязательно для заполнения"));
+
+        // Сообщение об ошибке от сервера не должно появляться при валидации на клиенте
+        $("[data-test-id='error-notification']").shouldNotBe(visible);
+
+        // Заголовок "Личный кабинет" не должен появиться
+        $("h2").shouldNotHave(exactText("Личный кабинет"));
     }
 
-    // Тест 7: Пустой пароль
     @Test
     void shouldNotLoginWithEmptyPassword() {
         RegistrationDto user = DataGenerator.createActiveUser();
@@ -114,8 +123,14 @@ public class LoginTest {
         $("[data-test-id='password'] input").setValue("");
         $("[data-test-id='action-login']").click();
 
-        // Проверяем, что появилось сообщение об ошибке валидации
+        // Проверка валидации поля
         $("[data-test-id='password'].input_invalid").shouldBe(visible);
-        $("[data-test-id='password'] .input__sub").shouldHave(text("Поле обязательно для заполнения"));
+        $("[data-test-id='password'] .input__sub").shouldHave(exactText("Поле обязательно для заполнения"));
+
+        // Сообщение об ошибке от сервера не должно появляться
+        $("[data-test-id='error-notification']").shouldNotBe(visible);
+
+        // Заголовок "Личный кабинет" не должен появиться
+        $("h2").shouldNotHave(exactText("Личный кабинет"));
     }
 }

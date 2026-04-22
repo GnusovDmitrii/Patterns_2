@@ -22,4 +22,4 @@ jobs:
           java -jar artifacts/app-ibank.jar -P:profile=test &
 
       - name: Run API tests
-        run: gradle test --info -Dselenide.headless=true
+        run: gradle test -Dselenide.headless=true --info
